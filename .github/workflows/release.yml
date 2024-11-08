@@ -9,7 +9,7 @@ on:
         default: false
       with-docker-images:
         type: boolean
-        description: Build and push docker images
+        description: Build and push docker images 2
         default: true
 
 jobs:
@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:

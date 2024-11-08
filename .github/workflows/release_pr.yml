@@ -7,7 +7,6 @@ on:
 
 jobs:
   build-docker-image:
-    if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/release-pr') }} && ${{ github.event.issue.state }} == "open" && (github.event.comment.author_association == 'COLLABORATOR' || github.event.comment.author_association == 'OWNER')
     name: Build and push docker images
     runs-on: ubuntu-latest
     steps:
