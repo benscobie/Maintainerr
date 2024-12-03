@@ -13,8 +13,8 @@ on:
         default: true
 
 jobs:
-  semantic-release:
-    name: Tag and release latest version
+  semantic-release-dry:
+    name: Generate version
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
@@ -34,19 +34,19 @@ jobs:
       - name: Install dependencies
         run: yarn --immutable
       - name: Release
+        id: release-version
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
-          if [ "${{ github.event.inputs.dry-run-semantic-release }}" == "true" ]; then
           npx semantic-release --dry-run
-          else
-          npx semantic-release
-          fi
+    outputs:
+      version: ${{ steps.release-version.outputs.version }}
+      tag: ${{ steps.release-version.outputs.tag }}
 
   build-docker-image:
-    if: ${{ github.event.inputs.with-docker-images == 'true' }}
+    if: ${{ false }}
     name: Build and push docker images
-    needs: semantic-release
+    needs: semantic-release-dry
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -81,10 +81,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME  }}
           password: ${{ secrets.DOCKERHUB_TOKEN  }}
 
-      - name: get-npm-version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
-
       - name: Build & Push docker images
         uses: docker/build-push-action@v5
         with:
@@ -95,8 +91,99 @@ jobs:
             GIT_SHA=${{ github.sha }}
             VERSION_TAG=stable
           tags: |
-            ghcr.io/jorenn92/maintainerr:${{ steps.package-version.outputs.current-version}}
+            ghcr.io/jorenn92/maintainerr:${{ needs.semantic-release-dry.outputs.version }}
             ghcr.io/jorenn92/maintainerr:latest
-            jorenn92/maintainerr:${{ steps.package-version.outputs.current-version}}
+            jorenn92/maintainerr:${{ needs.semantic-release-dry.outputs.version }}
             jorenn92/maintainerr:latest
           labels: ${{ steps.meta.outputs.labels }}
+
+  build_artifacts:
+    name: ${{ github.event_name == 'pull_request' && 'Build' || 'Build & Push' }}
+    needs: semantic-release-dry
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: Install turbo
+        run: yarn global add turbo@^2
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: yarn turbo build
+
+      - name: Prepare artifact
+        shell: bash
+        run: |
+          mkdir _output
+          cp -r ui/.next/standalone/ui _output/ui
+          cp -r ui/.next/static _output/ui/.next/static
+          cp -r ui/public _output/ui/public
+          cp -r server/dist _output/server
+          cp -r server/node_modules _output/server/node_modules
+
+      - name: Create zip
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: "zip"
+          directory: "./_artifacts/"
+          path: "../_output/"
+          filename: "Maintainerr.${{ needs.semantic-release-dry.outputs.version }}.zip"
+
+      - name: Create tar
+        uses: thedoctor0/zip-release@0.7.5
+        with:
+          type: "tar"
+          directory: "./_artifacts/"
+          path: "../_output/"
+          filename: "Maintainerr.${{ needs.semantic-release-dry.outputs.version }}.zip"
+
+      - name: Publish artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Maintainerr
+          path: ${{ github.workspace }}/_artifacts/
+
+  semantic-release:
+    name: Tag and release latest version
+    needs: [build_artifacts, build-docker-image]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Activate corepack
+        run: |
+          corepack install
+          corepack enable
+      - name: Install dependencies
+        run: yarn --immutable
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry-run-semantic-release }}" == "true" ]; then
+          npx semantic-release --dry-run
+          else
+          npx semantic-release
+          fi

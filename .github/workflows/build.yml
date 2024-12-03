@@ -61,3 +61,40 @@ jobs:
             ${{ steps.meta.outputs.tags }}
             jorenn92/maintainerr:develop
           labels: ${{ steps.meta.outputs.labels }}
+
+  build_artifacts:
+    name: ${{ github.event_name == 'pull_request' && 'Build' || 'Build & Push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+
+      - name: Install turbo
+        run: yarn global add turbo@^2
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: yarn turbo build
+
+      - name: Prepare Artifact
+        shell: bash
+        run: |
+          mkdir _output
+          cp -r ui/.next/standalone/ui _output/ui
+          cp -r ui/.next/static _output/ui/.next/static
+          cp -r ui/public _output/ui/public
+          cp -r server/dist _output/server
+          cp -r server/node_modules _output/server/node_modules
+
+      - name: Publish UI Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build_ui
+          path: _output/
