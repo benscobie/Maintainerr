@@ -121,11 +121,11 @@ jobs:
           corepack install
           corepack enable
 
-      - name: Install turbo
-        run: yarn global add turbo@^2
-
       - name: Install dependencies
         run: yarn install
+
+      - name: Install turbo
+        run: yarn global add turbo@^2
 
       - name: Build
         run: yarn turbo build
