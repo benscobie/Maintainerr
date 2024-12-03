@@ -131,6 +131,7 @@ jobs:
         shell: bash
         run: |
           mkdir _output
+          mkdir _artifacts
           cp -r ui/.next/standalone/ui _output/ui
           cp -r ui/.next/static _output/ui/.next/static
           cp -r ui/public _output/ui/public
