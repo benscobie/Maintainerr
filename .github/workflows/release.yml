@@ -102,10 +102,23 @@ jobs:
     needs: semantic-release-dry
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
+        include:
+          - os: windows-latest
+            name: win
+            architecture:
+              - x64
+              - x86
+          - os: macos-latest
+            name: osx
+            architecture:
+              - x64
+              - arm64
+          - os: ubuntu-latest
+            name: linux
+            architecture:
+              - x64
+              - arm
+              - arm64
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out the repo
@@ -115,6 +128,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          architecture: ${{ matrix.architecture }}
+
+      - name: Setup node x86
+        if: matrix.architecture == 'x86'
+        run: yarn config set supportedArchitectures.cpu "ia32"
+
+      - name: Setup node x64
+        if: matrix.architecture == 'x64'
+        run: yarn config set supportedArchitectures.cpu "x64"
+
+      - name: Setup node arm
+        if: matrix.architecture == 'arm'
+        run: yarn config set supportedArchitectures.cpu "arm"
+
+      - name: Setup node arm64
+        if: matrix.architecture == 'arm64'
+        run: yarn config set supportedArchitectures.cpu "arm64"
 
       - name: Activate corepack
         run: |
@@ -140,19 +170,21 @@ jobs:
 
       - name: Create zip
         uses: thedoctor0/zip-release@0.7.5
+        if: matrix.name == 'windows' || matrix.name == 'macos'
         with:
           type: "zip"
-          directory: "./_artifacts/"
-          path: "../_output/"
-          filename: "Maintainerr.${{ needs.semantic-release-dry.outputs.version }}.zip"
+          directory: "./_output/"
+          path: "."
+          filename: "../_artifacts/Maintainerr.${{ needs.semantic-release-dry.outputs.version }}.${{ matrix.name }}-${{ matrix.architecture }}.zip"
 
       - name: Create tar
         uses: thedoctor0/zip-release@0.7.5
+        if: matrix.name == 'macos' || matrix.name == 'ubuntu'
         with:
           type: "tar"
-          directory: "./_artifacts/"
-          path: "../_output/"
-          filename: "Maintainerr.${{ needs.semantic-release-dry.outputs.version }}.zip"
+          directory: "./_output/"
+          path: "."
+          filename: "../_artifacts/Maintainerr.${{ needs.semantic-release-dry.outputs.version }}.${{ matrix.name }}-${{ matrix.architecture }}.tar.gz"
 
       - name: Publish artifact
         uses: actions/upload-artifact@v4
