@@ -1,6 +1,14 @@
 # 1.0.0 (2024-12-09)
 
 
+### Features
+
+* bump ([0aa1874](https://github.com/benscobie/Maintainerr/commit/0aa187417105ec060fb42b7d4499e669beec601e))
+* bump ([66aa62c](https://github.com/benscobie/Maintainerr/commit/66aa62c62976a740b6c74127ceea09ffdd726073))
+
+# 1.0.0 (2024-12-09)
+
+
 ### Bug Fixes
 
 * __PATH_PREFIX__ not replaced when using user directive ([#1394](https://github.com/benscobie/Maintainerr/issues/1394)) ([9b237ea](https://github.com/benscobie/Maintainerr/commit/9b237ea403224f9742bcb2cde7ba586a8a5fdcd1))
