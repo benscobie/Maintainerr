@@ -1,0 +1,8 @@
+// After each new entity, generate migration
+yarn migration:generate server/src/database/migrations/<migr_name>
+
+// Run migrations
+yarn migration:run
+
+// Revert migrations
+yarn migration:revert

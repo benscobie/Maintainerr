@@ -1,0 +1,85 @@
+{
+  "name": "maintainerr",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "yarn@4.5.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benscobie/Maintainerr.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "turbo format",
+    "format:check": "turbo format:check",
+    "knip": "knip"
+  },
+  "workspaces": [
+    "ui",
+    "server"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.0",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@types/node": "^22.9.4",
+    "knip": "^5.36.5",
+    "semantic-release": "^24.2.0",
+    "turbo": "^2.2.3",
+    "typescript": "^5.7.2"
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/changelog",
+        {
+          "changelogFile": "CHANGELOG.md"
+        }
+      ],
+      "@semantic-release/npm",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json",
+            "CHANGELOG.md"
+          ],
+          "message": "chore(release): ${nextRelease.version}"
+        }
+      ],
+      [
+        "@semantic-release/github",
+        {
+          "addReleases": "bottom"
+        }
+      ],
+      "semantic-release-gha-output"
+    ],
+    "branches": [
+      "main"
+    ],
+    "npmPublish": false,
+    "publish": [
+      {
+        "path": "@semantic-release/github",
+        "assets": [
+          {
+            "path": "_artifacts/*",
+            "label": "Release Artifact"
+          }
+        ]
+      }
+    ]
+  },
+  "dependencies": {
+    "semantic-release-gha-output": "^1.1.0"
+  }
+}

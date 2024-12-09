@@ -1,0 +1,7 @@
+**/node_modules/
+.git
+data/
+server/dist
+ui/.next
+Dockerfile
+**/*.md
