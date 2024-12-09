@@ -72,8 +72,7 @@
         "path": "@semantic-release/github",
         "assets": [
           {
-            "path": "_artifacts/*",
-            "label": "Release Artifact"
+            "path": "_artifacts/*"
           }
         ]
       }
