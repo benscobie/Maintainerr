@@ -7,9 +7,10 @@ import chalk from 'chalk';
 import path from 'path';
 import * as fs from 'fs';
 
+const dataDirEnv = (process.env.DATA_DIR ?? '/opt/data').replace(/\/$/, '');
 const dataDir =
   process.env.NODE_ENV === 'production'
-    ? '/opt/data'
+    ? dataDirEnv
     : path.join(__dirname, '../../data');
 
 async function bootstrap() {
