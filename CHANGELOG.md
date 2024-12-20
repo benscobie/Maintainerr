@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/benscobie/Maintainerr/compare/v1.0.0...v1.1.0) (2024-12-20)
+
+
+### Features
+
+* Release file names ([3d6eff5](https://github.com/benscobie/Maintainerr/commit/3d6eff54e08e92bf67448ff1b4aa843a94630a86))
+
 # 1.0.0 (2024-12-09)
 
 
